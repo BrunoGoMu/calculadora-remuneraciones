@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Remuneraciones - Bruno González</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --primary-purple: #a288e3;
+            --text-color: #e0e0e0;
+            --input-bg: #3d3d3d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            border-top: 5px solid var(--primary-purple);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-purple);
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #bbb;
+        }
+
+        select, input {
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary-purple);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-purple);
+            margin-top: 5px;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            background-color: rgba(162, 136, 227, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .total-label { font-size: 0.9rem; }
+        .total-amount { font-size: 1.5rem; font-weight: bold; color: #fff; }
+
+        @media (max-width: 480px) {
+            .grid, .result-box { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cálculos Valor Día - Valor Hr - Valor Hr Extra</h2>
+    
+    <div class="grid">
+        <div class="field">
+            <label>Tipo de Sueldo</label>
+            <select id="ddTipoSueldo" onchange="calcular()">
+                <option value="Fijo">Fijo</option>
+                <option value="Variable">Variable</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Sueldo Base ($)</label>
+            <input type="number" id="txtSueldoBase" value="539000" oninput="calcular()">
+        </div>
+        <div class="field">
+            <label>Hrs. Semanales</label>
+            <select id="ddHrsSemanales" onchange="calcular()">
+                <option value="44">44</option>
+                <option value="42">42</option>
+                <option value="40">40</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Recargo Hr. Extra</label>
+            <select id="ddRecargo" onchange="calcular()">
+                <option value="50">50%</option>
+                <option value="60">60%</option>
+                <option value="70">70%</option>
+                <option value="80">80%</option>
+                <option value="90">90%</option>
+                <option value="100">100%</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="result-box">
+        <div class="result-item">
+            <label>Valor Día</label>
+            <div class="result-value" id="resValorDia">$0</div>
+        </div>
+        <div class="result-item">
+            <label>Valor Hr.</label>
+            <div class="result-value" id="resValorHr">$0</div>
+        </div>
+        <div class="result-item">
+            <label>Valor Hr. Extra</label>
+            <div class="result-value" id="resValorHrExtra">$0</div>
+        </div>
+    </div>
+
+    <div class="field" style="margin-top: 20px;">
+        <label>Cantidad de Hrs. Extras Realizadas</label>
+        <input type="number" id="txtCantExtras" value="0" oninput="calcular()">
+    </div>
+
+    <div class="total-section">
+        <div class="total-label">Total por Hrs. Extras</div>
+        <div class="total-amount" id="resTotalExtras">$0</div>
+    </div>
+</div>
+
+<script>
+    function formatMoney(value) {
+        return '$' + Math.round(value).toLocaleString('es-ES');
+    }
+
+    function calcular() {
+        const tipoSueldo = document.getElementById('ddTipoSueldo').value;
+        let sueldoBase = parseFloat(document.getElementById('txtSueldoBase').value) || 0;
+        const hrsSemanales = parseFloat(document.getElementById('ddHrsSemanales').value);
+        const recargo = parseFloat(document.getElementById('ddRecargo').value);
+        const cantExtras = parseFloat(document.getElementById('txtCantExtras').value) || 0;
+
+        // Lógica según tus fórmulas de Power Apps
+        let sueldoCalculo = (tipoSueldo === "Variable") ? 539000 : sueldoBase;
+
+        // 1. Valor Día
+        const valorDia = sueldoCalculo / 30;
+
+        // 2. Valor Hora (Fórmula DT Chile)
+        const valorHr = (sueldoCalculo / 30) * (7 / hrsSemanales);
+
+        // 3. Valor Hora Extra
+        const valorHrExtra = valorHr * (1 + (recargo / 100));
+
+        // 4. Total Extras
+        const totalExtras = valorHrExtra * cantExtras;
+
+        // Mostrar resultados
+        document.getElementById('resValorDia').innerText = formatMoney(valorDia);
+        document.getElementById('resValorHr').innerText = formatMoney(valorHr);
+        document.getElementById('resValorHrExtra').innerText = formatMoney(valorHrExtra);
+        document.getElementById('resTotalExtras').innerText = formatMoney(totalExtras);
+    }
+
+    // Ejecutar al cargar
+    calcular();
+</script>
+
+</body>
+</html>
